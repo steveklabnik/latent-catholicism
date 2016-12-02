@@ -1,6 +1,7 @@
 mod error;
 
 use std::str::FromStr;
+use std::collections::HashSet;
 use error::ParseError;
 
 #[derive(PartialEq, Debug)]
@@ -64,53 +65,149 @@ fn main() {
 
     let directions: Instructions = input.parse().expect("parse failed");
 
-    assert_eq!(directions.0.last(), Some(&Instruction { direction: InstructionDirection::Left, distance: 2}));
-
     // Following R2, L3 leaves you 2 blocks East and 3 blocks North, or 5 blocks away.
     // R2, R2, R2 leaves you 2 blocks due South of your starting position, which is 2 blocks away.
     // R5, L5, R5, R3 leaves you 12 blocks away.
 
     let mut position = (0i64, 0i64);
     let mut direction = Direction::Up;
+    let mut seen = HashSet::new();
+    let mut seen_twice = None;
 
     for instruction in directions.0 {
         direction = match (instruction.direction, direction) {
             (InstructionDirection::Left, Direction::Left) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0, position.1 - count as i64);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.1 -= instruction.distance as i64;
 
                 Direction::Down
             },
             (InstructionDirection::Left, Direction::Right) => {
-                position.0 += instruction.distance as i64;
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0, position.1 + count as i64);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
+                position.1 += instruction.distance as i64;
 
                 Direction::Up
             },
             (InstructionDirection::Left, Direction::Up) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0 - count as i64, position.1);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.0 -= instruction.distance as i64;
 
                 Direction::Left
             },
             (InstructionDirection::Left, Direction::Down) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0 + count as i64, position.1);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.0 += instruction.distance as i64;
 
                 Direction::Right
             },
             (InstructionDirection::Right, Direction::Left) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0, position.1 + count as i64);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.1 += instruction.distance as i64;
 
                 Direction::Up
             },
             (InstructionDirection::Right, Direction::Right) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0, position.1 - count as i64);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.1 -= instruction.distance as i64;
 
                 Direction::Down
             },
             (InstructionDirection::Right, Direction::Up) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0 + count as i64, position.1);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.0 += instruction.distance as i64;
 
                 Direction::Right
             },
             (InstructionDirection::Right, Direction::Down) => {
+                for count in 0..instruction.distance {
+                    let seen_position = (position.0 - count as i64, position.1);
+
+                    if seen_twice.is_none() {
+                        if seen.contains(&seen_position) {
+                            seen_twice = Some(seen_position);
+                        } else {
+                            seen.insert(seen_position);
+                        }
+                    }
+                }
+
                 position.0 -= instruction.distance as i64;
 
                 Direction::Left
@@ -118,6 +215,11 @@ fn main() {
         }
     }
 
-    println!("({},{})", position.0, position.1);
-    println!("blocks: {}", position.0.abs() + position.1.abs())
+    println!("end spot: ({},{})", position.0, position.1);
+    println!("blocks: {}", position.0.abs() + position.1.abs());
+
+    if let Some(seen) = seen_twice {
+        println!("seen twice: {:?}", seen);
+        println!("blocks: {}", seen.0.abs() + seen.1.abs())
+    }
 }
