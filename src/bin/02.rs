@@ -13,6 +13,7 @@ LURLUURLURDUUDRUDLDLLURRRDLDRRRULDDRRDRDUUDRUDURDDDURLUDDLULUULRRLLRULUDRDDRRRLD
            keypad.process(c);
         }
 
+
         s += &keypad.result().to_string();
     }
 
@@ -28,8 +29,8 @@ struct Keypad {
 impl Keypad {
     fn new() -> Keypad {
         Keypad {
-            x: 1,
-            y: 1,
+            x: 0,
+            y: 2,
         }
     }
 
@@ -44,40 +45,66 @@ impl Keypad {
     }
 
     fn up(&mut self) {
-        if self.y > 0 {
-            self.y -= 1;
+        match self.y {
+            0 => (),
+            1 if self.x == 2 => self.y -= 1,
+            1 => (),
+            2 if self.x > 0 && self.x < 4 => self.y -= 1,
+            2 => (),
+            3 | 4 => self.y -= 1,
+            _ => unreachable!(),
         }
     }
 
     fn down(&mut self) {
-        if self.y < 2 {
-            self.y += 1;
+        match self.y {
+            0 | 1 => self.y += 1,
+            2 if self.x > 0 && self.x < 4 => self.y += 1,
+            2 => (),
+            3 if self.x == 2 => self.y += 1,
+            3 | 4 => (),
+            _ => unreachable!(),
         }
     }
 
     fn left(&mut self) {
-        if self.x > 0 {
-            self.x -= 1;
+        match self.x {
+            0 => (),
+            1 if self.y == 2 => self.x -= 1,
+            1 => (),
+            2 if self.y > 0 && self.y < 4 => self.x -= 1,
+            2 => (),
+            3 | 4 => self.x -= 1,
+            _ => unreachable!(),
         }
     }
 
     fn right(&mut self) {
-        if self.x < 2 {
-            self.x += 1;
+        match self.x {
+            0 | 1 => self.x += 1,
+            2 if self.y > 0 && self.y < 4 => self.x += 1,
+            2 => (),
+            3 if self.y == 2 => self.x += 1,
+            3 | 4 => (),
+            _ => unreachable!(),
         }
     }
 
     fn result(&self) -> char {
         match (self.x, self.y) {
-            (0, 0) => '1',
-            (1, 0) => '2',
-            (2, 0) => '3',
-            (0, 1) => '4',
-            (1, 1) => '5',
-            (2, 1) => '6',
-            (0, 2) => '7',
-            (1, 2) => '8',
-            (2, 2) => '9',
+            (2, 0) => '1',
+            (1, 1) => '2',
+            (2, 1) => '3',
+            (3, 1) => '4',
+            (0, 2) => '5',
+            (1, 2) => '6',
+            (2, 2) => '7',
+            (3, 2) => '8',
+            (4, 2) => '9',
+            (1, 3) => 'A',
+            (2, 3) => 'B',
+            (3, 3) => 'C',
+            (2, 4) => 'D',
             (_, _) => unreachable!(),
         }
     }
