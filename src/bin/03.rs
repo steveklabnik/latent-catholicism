@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use std::num::ParseIntError;
 
 fn main() {
@@ -1738,11 +1737,38 @@ fn main() {
   356  902  922";
 
     let sum = input.lines()
-        .map(Triangle::from_str)
+        .collect::<Vec<_>>() // ugh i give up
+        .chunks(3)
+        .map(parse_three_lines)
         .filter(Result::is_ok)
-        .count();
+        .map(Result::unwrap)
+        .sum::<i32>();
 
     println!("{} possible triangles found", sum);
+}
+
+fn parse_three_lines(window: &[&str]) -> Result<i32, ()> {
+    let digits0 = window[0].split_whitespace()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .collect::<Vec<i32>>();
+
+    let digits1 = window[1].split_whitespace()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .collect::<Vec<i32>>();
+
+    let digits2 = window[2].split_whitespace()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .collect::<Vec<i32>>();
+
+
+    let v = vec![Triangle::new((digits0[0], digits1[0], digits2[0])),
+             Triangle::new((digits0[1], digits1[1], digits2[1])),
+             Triangle::new((digits0[2], digits1[2], digits2[2]))];
+
+    Ok(v.iter().filter(|r| r.is_ok()).count() as i32)
 }
 
 #[derive(Debug)]
@@ -1752,26 +1778,18 @@ struct Triangle {
     third: i32,
 }
 
-impl FromStr for Triangle {
-    type Err = InvalidTriangleError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let digits = s.split_whitespace()
-            .map(str::parse)
-            .collect::<Result<Vec<i32>, _>>()?;
-
-        assert_eq!(digits.len(), 3);
-
-        if digits[1] + digits[2] <= digits[0] ||
-           digits[0] + digits[2] <= digits[1] ||
-           digits[0] + digits[1] <= digits[2] {
+impl Triangle {
+    fn new(points: (i32, i32, i32)) -> Result<Triangle, InvalidTriangleError> {
+        if points.1 + points.2 <= points.0 ||
+           points.0 + points.2 <= points.1 ||
+           points.0 + points.1 <= points.2 {
             return Err(InvalidTriangleError::BadLengths);
         }
 
         Ok(Triangle {
-            first: digits[0],
-            second: digits[1],
-            third: digits[2],
+            first: points.0,
+            second: points.1,
+            third: points.2,
         })
     }
 }
